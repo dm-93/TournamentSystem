@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
@@ -28,7 +29,7 @@ namespace TournamentSystemDataSource.Services
             _picturesService = picturesService;
         }
 
-        public async Task<IEnumerable<Tournament>> GetTournamentsAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<TournamentDto>> GetTournamentsAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Retrieving tournaments...");
 
@@ -42,7 +43,15 @@ namespace TournamentSystemDataSource.Services
 
             _logger.LogInformation("Tournaments retrieved successfully.");
 
-            return tournaments;
+            var tasks = tournaments.Select(async t =>
+            {
+                var pictureBase64 = t.TournamentPicture is not null ?
+                await _picturesService.ResizeImageToBase64Async(t.TournamentPicture.PictureUrl, cancellationToken) :
+                string.Empty;
+                return new TournamentDto(t, pictureBase64);
+            }).ToList();
+
+            return await Task.WhenAll(tasks);
         }
 
         public async Task<IEnumerable<TournamentDto>> GetTournamentByConditionAsync(GetByConditionRequest request, CancellationToken cancellationToken)
