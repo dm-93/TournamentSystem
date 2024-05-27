@@ -9,16 +9,19 @@ public class TournamentDto
     public decimal EntryFee { get; set; }
     public string TournamentPictureBase64 { get; set; }
 
-    public Tournament MapToDomainModel()
+    public TournamentDto(Tournament tournament)
     {
-        return new Tournament
-        {
-            Id = Id,
-            Name = Name,
-            StartDate = StartDate,
-            EndDate = EndDate,
-            EntryFee = EntryFee,
-            TournamentPicture = null,
-        };
+        Id = tournament.Id;
+        Name = tournament.Name;
+        StartDate = tournament.StartDate;
+        EndDate = tournament.EndDate;
+        EntryFee = tournament.EntryFee;
+        TournamentPictureBase64 = string.Empty;
     }
+
+    public TournamentDto(Tournament tournament, string tournamentPictureBase64) : this(tournament)
+    {
+        TournamentPictureBase64 = tournamentPictureBase64;
+    }
+
 }

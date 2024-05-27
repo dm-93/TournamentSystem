@@ -45,15 +45,16 @@ namespace TournamentSystemDataSource.Services
             return tournaments;
         }
 
-        public async Task<IEnumerable<Tournament>> GetTournamentByConditionAsync(GetByConditionRequest request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<TournamentDto>> GetTournamentByConditionAsync(GetByConditionRequest request, CancellationToken cancellationToken)
         {
             var property = typeof(Tournament).GetProperty(request.PropertyName,
-                                                          BindingFlags.Public | 
-                                                          BindingFlags.Instance | 
-                                                          BindingFlags.IgnoreCase | 
+                                                          BindingFlags.Public |
+                                                          BindingFlags.Instance |
+                                                          BindingFlags.IgnoreCase |
                                                           BindingFlags.FlattenHierarchy)
                 ?? throw new ArgumentNullException($"Не получилось найти св-во: {request.PropertyName} в {nameof(Tournament)}.");
-            var tournament = await _context.Tournaments.AsNoTracking()
+
+            var tournaments = await _context.Tournaments.AsNoTracking()
                 .Include(t => t.EnteredTeams)
                 .Include(t => t.Prizes)
                 .Include(t => t.Rounds)
@@ -62,15 +63,23 @@ namespace TournamentSystemDataSource.Services
                 .ApplyFilter(property, request.PropertyValue, request.PropertyValueType)
                 .ToListAsync(cancellationToken);
 
-            if (tournament == null)
+            if (tournaments == null)
             {
                 _logger.LogWarning($"Tournament with {property.Name} = {request.PropertyValue} not found.");
                 throw new ArgumentException($"Турнир с Id {property.Name} = {request.PropertyValue} не найден.");
             }
 
+            var tasks = tournaments.Select(async t =>
+            {
+                var pictureBase64 = t.TournamentPicture is not null ?
+                await _picturesService.ResizeImageToBase64Async(t.TournamentPicture.PictureUrl, cancellationToken) :
+                string.Empty;
+                return new TournamentDto(t, pictureBase64);
+            }).ToList();
+
             _logger.LogInformation($"Tournament with ID {property.Name} = {request.PropertyValue} retrieved successfully.");
 
-            return tournament;
+            return await Task.WhenAll(tasks);
         }
 
         public async Task<Tournament> CreateTournamentAsync(Tournament tournament, CancellationToken cancellationToken)
