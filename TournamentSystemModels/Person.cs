@@ -10,6 +10,7 @@
         public string Phone { get; set; }
         public string Email { get; set; }
         public int AddressId { get; set; }
+        public int TeamId { get; set; }
         public Pictures UserPicture { get; set; }
         public Address Address { get; set; }
     }

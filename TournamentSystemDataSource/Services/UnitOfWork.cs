@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TournamentSystemDataSource.Contexts;
 using TournamentSystemDataSource.Services.Interfaces;
 using TournamentSystemModels;
 
@@ -33,7 +34,14 @@ namespace TournamentSystemDataSource.Services
 
             foreach (var entry in entries)
             {
-                entry.Entity.UpdatedOn = DateTime.Now;
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedOn = DateTime.Now;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedOn = DateTime.Now;
+                }
             }
         }
     }

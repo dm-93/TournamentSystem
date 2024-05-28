@@ -1,4 +1,6 @@
-﻿namespace TournamentSystemDataSource.DTO.Person.Response
+﻿using TournamentSystemModels;
+
+namespace TournamentSystemDataSource.DTO.Person.Response
 {
     public record CreatePersonResponse
     {
@@ -10,5 +12,7 @@
         public required bool Gender { get; set; }
         public required string Phone { get; set; }
         public required string Email { get; set; }
+        public int TeamId { get; set; }
+        public Address Address { get; set; }
     }
 }

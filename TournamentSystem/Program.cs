@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Identity;
+using TournamentSystemDataSource.Contexts;
 using TournamentSystemDataSource.Extensions;
+using TournamentSystemModels.Identity;
 
 namespace TournamentSystem
 {
@@ -13,6 +16,16 @@ namespace TournamentSystem
                 builder.AllowAnyMethod();
                 builder.AllowAnyOrigin();
             }));
+
+            #region Authentication
+            builder.Services.AddAuthorization();
+            builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
+            builder.Services.AddIdentityCore<User>()
+                .AddEntityFrameworkStores<AuthContext>()
+                .AddApiEndpoints();
+            builder.Services.AddAuthContext();
+            #endregion
+
             builder.Services.AddGeneralContext();
             builder.Services.AddUnitOfWork();
             builder.Services.AddServices();
@@ -31,6 +44,7 @@ namespace TournamentSystem
             app.UseCors("MyPolicy");
             app.UseHttpsRedirection();
             app.UseAuthorization();
+            app.MapIdentityApi<User>();
             app.MapControllers();
             app.Run();
         }

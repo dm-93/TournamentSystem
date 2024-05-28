@@ -23,7 +23,7 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpGet("filter")]
-        public async Task<IActionResult> GetFiltered([FromQuery] GetPersonByConditionRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetFiltered([FromQuery] GetByConditionRequest request, CancellationToken cancellationToken)
         {
             var res = await _service.GetByConditionAsync(request, cancellationToken);
             return res is not null ? Ok(res) : NotFound();

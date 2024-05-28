@@ -9,7 +9,12 @@ public class TournamentDto
     public decimal EntryFee { get; set; }
     public string TournamentPictureBase64 { get; set; }
 
-    public TournamentDto(Tournament tournament)
+    public TournamentDto()
+    {
+
+    }
+
+    public TournamentDto(Tournament tournament) : this()
     {
         Id = tournament.Id;
         Name = tournament.Name;
@@ -23,5 +28,4 @@ public class TournamentDto
     {
         TournamentPictureBase64 = tournamentPictureBase64;
     }
-
 }

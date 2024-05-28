@@ -5,6 +5,7 @@ using TournamentSystemModels;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.IO;
+using TournamentSystemDataSource.Contexts;
 
 namespace TournamentSystemDataSource.Services
 {
@@ -24,7 +25,7 @@ namespace TournamentSystemDataSource.Services
             return await _context.Pictures.FindAsync(id, cancellationToken);
         }
 
-        public async Task<Pictures?> UpdatePictureAsync(int id, string pictureBase64, CancellationToken cancellationToken)
+        public async Task<Pictures?> UpsertPictureAsync(int id, string pictureBase64, CancellationToken cancellationToken)
         {
             var picture = await GetPictureAsync(id, cancellationToken);
 

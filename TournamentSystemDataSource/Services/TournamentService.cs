@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
+using TournamentSystemDataSource.Contexts;
 using TournamentSystemDataSource.DTO;
 using TournamentSystemDataSource.Extensions;
 using TournamentSystemDataSource.Services.Interfaces;
@@ -34,11 +35,7 @@ namespace TournamentSystemDataSource.Services
             _logger.LogInformation("Retrieving tournaments...");
 
             var tournaments = await _context.Tournaments.AsNoTracking()
-                .Include(t => t.EnteredTeams)
-                .Include(t => t.Prizes)
-                .Include(t => t.Rounds)
                 .Include(t => t.TournamentPicture)
-                .AsSplitQuery()
                 .ToListAsync(cancellationToken);
 
             _logger.LogInformation("Tournaments retrieved successfully.");
@@ -91,19 +88,27 @@ namespace TournamentSystemDataSource.Services
             return await Task.WhenAll(tasks);
         }
 
-        public async Task<Tournament> CreateTournamentAsync(Tournament tournament, CancellationToken cancellationToken)
+        public async Task<TournamentDto> CreateTournamentAsync(TournamentDto dto, CancellationToken cancellationToken)
         {
-            if (tournament == null)
+            if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(tournament)} не может быть равно null.");
+                throw new ArgumentNullException($"{nameof(dto)} не может быть равно null.");
             }
 
             _logger.LogInformation("Creating a new tournament...");
+            var tournament = new Tournament
+            {
+                Name = dto.Name,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                EntryFee = dto.EntryFee,
+            };
             tournament.CreatedOn = DateTime.UtcNow;
+            tournament.TournamentPicture = await _picturesService.CreatePictureAsync(dto.TournamentPictureBase64, cancellationToken);
             var res = await _context.Tournaments.AddAsync(tournament);
             await _unitOfWork.SaveAsync(cancellationToken);
             _logger.LogInformation("Tournament created successfully.");
-            return res.Entity;
+            return new TournamentDto(res.Entity);
         }
 
         public async Task<Tournament> UpdateTournamentAsync(TournamentDto updatedTournament, CancellationToken cancellationToken)
@@ -123,7 +128,7 @@ namespace TournamentSystemDataSource.Services
 
             if (existingTournament.TournamentPicture is not null)
             {
-                existingTournament.TournamentPicture = await _picturesService.UpdatePictureAsync(existingTournament.TournamentPicture.Id,
+                existingTournament.TournamentPicture = await _picturesService.UpsertPictureAsync(existingTournament.TournamentPicture.Id,
                                                                                                  updatedTournament.TournamentPictureBase64,
                                                                                                  cancellationToken);
             }

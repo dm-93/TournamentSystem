@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
+using TournamentSystemDataSource.Contexts;
 using TournamentSystemDataSource.DTO;
 using TournamentSystemDataSource.DTO.Person.Request;
 using TournamentSystemDataSource.DTO.Person.Response;
@@ -43,10 +44,14 @@ namespace TournamentSystemDataSource.Services
             });
         }
 
-        public async Task<IEnumerable<GetPersonResponse>> GetByConditionAsync(GetPersonByConditionRequest request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<GetPersonResponse>> GetByConditionAsync(GetByConditionRequest request, CancellationToken cancellationToken)
         {
-            var property = typeof(Person).GetProperty(request.PropertyName)
-                ?? throw new ArgumentNullException($"Не получилось найти св-во: {request.PropertyName} в {nameof(Person)}.");
+            var property = typeof(Person).GetProperty(request.PropertyName,
+                                                          BindingFlags.Public |
+                                                          BindingFlags.Instance |
+                                                          BindingFlags.IgnoreCase |
+                                                          BindingFlags.FlattenHierarchy)
+                ?? throw new ArgumentNullException($"Не получилось найти св-во: {request.PropertyName} в {nameof(Tournament)}.");
             return await _context.Persons
                 .Include(p => p.Address)
                 .ApplyFilter(property, request.PropertyValue, request.PropertyValueType)
@@ -66,10 +71,7 @@ namespace TournamentSystemDataSource.Services
 
         public async Task<CreatePersonResponse> CreateAsync(CreatePersonRequest createPersonRequest, CancellationToken cancellationToken)
         {
-            if (createPersonRequest is null)
-            {
-                throw new ArgumentNullException($"{nameof(createPersonRequest)} не может быть равен null.");
-            }
+            ArgumentNullException.ThrowIfNull(createPersonRequest);
             _logger.LogInformation("Creating a new person...");
             var person = new Person
             {
@@ -80,6 +82,7 @@ namespace TournamentSystemDataSource.Services
                 Gender = createPersonRequest.Gender,
                 Phone = createPersonRequest.Phone,
                 Email = createPersonRequest.Email,
+                TeamId = createPersonRequest.TeamId,
                 Address = createPersonRequest.Address
             };
             var res = await _context.Persons.AddAsync(person);
@@ -94,7 +97,9 @@ namespace TournamentSystemDataSource.Services
                 Weight = res.Entity.Weight,
                 Gender = res.Entity.Gender,
                 Phone = res.Entity.Phone,
-                Email = res.Entity.Email
+                Email = res.Entity.Email,
+                TeamId = res.Entity.TeamId,
+                Address = res.Entity.Address,
             };
         }
 

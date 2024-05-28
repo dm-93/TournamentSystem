@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TournamentSystemDataSource.DTO;
 using TournamentSystemDataSource.Services.Interfaces;
 using TournamentSystemModels;
@@ -16,6 +17,7 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             var res = await _service.GetTournamentsAsync(cancellationToken);
@@ -30,7 +32,7 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Tournament tournament, CancellationToken cancellationToken)
+        public async Task<IActionResult> Create([FromBody] TournamentDto tournament, CancellationToken cancellationToken)
         {
             var res = await _service.CreateTournamentAsync(tournament, cancellationToken);
             return res is not null ? Created(string.Empty, res) : BadRequest();

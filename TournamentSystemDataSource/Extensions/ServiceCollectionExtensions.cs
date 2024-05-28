@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TournamentSystemDataSource.Contexts;
 using TournamentSystemDataSource.Services;
 using TournamentSystemDataSource.Services.Interfaces;
 
@@ -11,6 +12,12 @@ namespace TournamentSystemDataSource.Extensions
         {
             services.AddDbContext<GeneralContext>((sp, options) =>
             options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Tournaments;Integrated Security=True;"));
+        }
+
+        public static void AddAuthContext(this IServiceCollection services)
+        {
+            services.AddDbContext<AuthContext>((sp, options) =>
+            options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=TournamentsIdentity;Integrated Security=True;"));
         }
 
         public static void AddUnitOfWork(this IServiceCollection services)

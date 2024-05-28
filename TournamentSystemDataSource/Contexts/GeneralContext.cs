@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using TournamentSystemModels;
 
-namespace TournamentSystemDataSource
+namespace TournamentSystemDataSource.Contexts
 {
     public class GeneralContext : DbContext
     {
