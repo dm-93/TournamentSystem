@@ -10,6 +10,7 @@ namespace TournamentSystem
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
             builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
                 builder.AllowAnyHeader();
@@ -21,6 +22,7 @@ namespace TournamentSystem
             builder.Services.AddAuthorization();
             builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
             builder.Services.AddIdentityCore<User>()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AuthContext>()
                 .AddApiEndpoints();
             builder.Services.AddAuthContext();
@@ -35,7 +37,6 @@ namespace TournamentSystem
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -47,6 +48,20 @@ namespace TournamentSystem
             app.MapIdentityApi<User>();
             app.MapControllers();
             app.Run();
+        }
+
+        public static async Task SeedRoles(IServiceProvider serviceProvider)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            string[] roleNames = { "Admin", "User", "Manager" };
+            foreach (var roleName in roleNames)
+            {
+                var roleExist = await roleManager.RoleExistsAsync(roleName);
+                if (!roleExist)
+                {
+                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                }
+            }
         }
     }
 }

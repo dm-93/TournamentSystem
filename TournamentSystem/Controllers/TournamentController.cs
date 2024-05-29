@@ -17,7 +17,7 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             var res = await _service.GetTournamentsAsync(cancellationToken);
@@ -32,6 +32,7 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] TournamentDto tournament, CancellationToken cancellationToken)
         {
             var res = await _service.CreateTournamentAsync(tournament, cancellationToken);
@@ -39,6 +40,7 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromBody] TournamentDto tournamentDto, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
@@ -51,6 +53,7 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpDelete]
+        [Authorize(Roles = "Admin")]
         public async Task Delete([FromQuery] int tournamentId, CancellationToken cancellationToken)
         {
             await _service.DeleteTournamentAsync(tournamentId, cancellationToken);
