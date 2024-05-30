@@ -7,6 +7,7 @@ namespace TournamentSystemDataSource.Services.Interfaces
     {
         Task<TournamentDto> CreateTournamentAsync(TournamentDto dto, CancellationToken cancellationToken);
         Task DeleteTournamentAsync(int tournamentId, CancellationToken cancellationToken);
+        Task<Tournament?> GetByIdAsync(int tournamentId, CancellationToken cancellationToken);
         Task<IEnumerable<TournamentDto>> GetTournamentByConditionAsync(GetByConditionRequest request, CancellationToken cancellationToken);
         Task<IEnumerable<TournamentDto>> GetTournamentsAsync(CancellationToken cancellationToken);
         Task<Tournament> UpdateTournamentAsync(TournamentDto updatedTournament, CancellationToken cancellationToken);

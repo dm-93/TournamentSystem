@@ -51,6 +51,17 @@ namespace TournamentSystemDataSource.Services
             return await Task.WhenAll(tasks);
         }
 
+        public async Task<Tournament?> GetByIdAsync(int tournamentId, CancellationToken cancellationToken)
+        {
+            return await _context.Tournaments.AsNoTracking()
+                .Include(t => t.EnteredTeams)
+                .Include(t => t.Prizes)
+                .Include(t => t.Rounds)
+                .Include(t => t.TournamentPicture)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(x => x.Id == tournamentId, cancellationToken);
+        }
+
         public async Task<IEnumerable<TournamentDto>> GetTournamentByConditionAsync(GetByConditionRequest request, CancellationToken cancellationToken)
         {
             var property = typeof(Tournament).GetProperty(request.PropertyName,

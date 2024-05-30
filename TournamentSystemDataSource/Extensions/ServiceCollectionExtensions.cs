@@ -34,6 +34,7 @@ namespace TournamentSystemDataSource.Extensions
             services.AddScoped<ITournamentService, TournamentService>();
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IPicturesService, PicturesService>();
+            services.AddScoped<IRoundsService, RoundsService>();
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace TournamentSystemModels
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TournamentSystemModels
 {
     public class Tournament: BaseEntity
     {
@@ -11,5 +13,7 @@
         public List<Team> EnteredTeams { get; set; } = [];
         public List<Prize> Prizes { get; set; } = [];
         public List<Matchup> Rounds { get; set; } = [];
+        [NotMapped]
+        public List<List<Matchup>> RoundsNm { get; set; } = [];
     }
 }

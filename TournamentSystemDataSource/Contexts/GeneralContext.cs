@@ -22,6 +22,21 @@ namespace TournamentSystemDataSource.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Matchup>()
+            .HasMany(m => m.Entries)
+            .WithOne(e => e.ParentMatchup)
+            .IsRequired();
+
+            modelBuilder.Entity<MatchupEntry>()
+                .HasOne(e => e.TeamCompeting)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Matchup>()
+                .HasOne(m => m.Winner)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
             base.OnModelCreating(modelBuilder);
 
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
