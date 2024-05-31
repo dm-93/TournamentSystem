@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TournamentSystemDataSource.Contexts;
+using TournamentSystemDataSource.Repositories;
+using TournamentSystemDataSource.Repositories.Interfaces;
 using TournamentSystemDataSource.Services;
 using TournamentSystemDataSource.Services.Interfaces;
 
@@ -35,6 +37,11 @@ namespace TournamentSystemDataSource.Extensions
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IPicturesService, PicturesService>();
             services.AddScoped<IRoundsService, RoundsService>();
+        }
+
+        public static void AddRepositories(this IServiceCollection services)
+        {
+            services.AddScoped<IRoundsRepository, RoundsRepository>();
         }
     }
 }

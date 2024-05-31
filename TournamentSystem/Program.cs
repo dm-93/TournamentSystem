@@ -29,6 +29,7 @@ namespace TournamentSystem
             #endregion
 
             builder.Services.AddGeneralContext();
+            builder.Services.AddRepositories();
             builder.Services.AddUnitOfWork();
             builder.Services.AddServices();
             builder.Services.AddControllers();
