@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TournamentSystemDataSource.DTO;
+using TournamentSystemDataSource.DTO.Pagination;
 using TournamentSystemDataSource.DTO.Person.Request;
 using TournamentSystemDataSource.Services.Interfaces;
 
@@ -16,7 +17,7 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] Pagination pagination, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll([FromQuery] Pagination<int> pagination, CancellationToken cancellationToken)
         {
             var res = await _service.GetPersonsPaginatedAsync(pagination, cancellationToken);
             return res is not null ? Ok(res) : NotFound();

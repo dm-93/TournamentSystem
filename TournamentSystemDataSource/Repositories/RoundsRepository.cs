@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TournamentSystemDataSource.Contexts;
+using TournamentSystemDataSource.DTO.Pagination;
 using TournamentSystemDataSource.Repositories.Interfaces;
 using TournamentSystemModels;
 
@@ -44,6 +45,21 @@ namespace TournamentSystemDataSource.Repositories
                 throw;
             }
         }
+
+        public async Task<PaginationResponse<IEnumerable<Matchup>>> GetTournamentRoundsAsync(Pagination<int> pagination, CancellationToken cancellationToken)   
+        {
+            var totalCount = await _context.Matchups.CountAsync(cancellationToken);
+            var data = await _context.Matchups
+                .Include(x => x.Entries)
+                    .ThenInclude(e => e.TeamCompeting)
+                .Include(m => m.Winner)
+                .Where(m => m.TournamentId == pagination.Parameter)
+                .Skip((pagination.Page - 1) * pagination.ItemsPerPage)
+                .Take(pagination.ItemsPerPage)
+                .ToListAsync(cancellationToken);
+            return new PaginationResponse<IEnumerable<Matchup>> { Data = data, TotalCount = totalCount };
+        }
+
         private async Task<int> InsertMatchupAsync(SqlConnection connection, Matchup matchup, int tournamentId, SqlTransaction transaction)
         {
             var query = @"INSERT INTO Matchups (CreatedOn, UpdatedOn, Deleted, MatchupRound, WinnerId, TournamentId)

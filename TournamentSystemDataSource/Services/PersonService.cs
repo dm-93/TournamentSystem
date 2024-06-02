@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Reflection;
 using TournamentSystemDataSource.Contexts;
 using TournamentSystemDataSource.DTO;
+using TournamentSystemDataSource.DTO.Pagination;
 using TournamentSystemDataSource.DTO.Person.Request;
 using TournamentSystemDataSource.DTO.Person.Response;
 using TournamentSystemDataSource.Extensions;
@@ -23,12 +24,12 @@ namespace TournamentSystemDataSource.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<GetPersonResponse>> GetPersonsPaginatedAsync(Pagination pagination, CancellationToken cancellationToken)
+        public async Task<IEnumerable<GetPersonResponse>> GetPersonsPaginatedAsync(Pagination<int> pagination, CancellationToken cancellationToken)
         {
             var persons = await _context.Persons
                     .Include(p => p.Address)
-                    .Skip(pagination.Skip)
-                    .Take(pagination.Take)
+                    .Skip((pagination.Page - 1) * pagination.ItemsPerPage)
+                    .Take(pagination.ItemsPerPage)
                     .ToListAsync(cancellationToken);
             return persons.Select(p => new GetPersonResponse
             {

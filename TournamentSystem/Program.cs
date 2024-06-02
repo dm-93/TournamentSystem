@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using System.Text.Json.Serialization;
 using TournamentSystemDataSource.Contexts;
 using TournamentSystemDataSource.Extensions;
 using TournamentSystemModels.Identity;
@@ -32,7 +33,7 @@ namespace TournamentSystem
             builder.Services.AddRepositories();
             builder.Services.AddUnitOfWork();
             builder.Services.AddServices();
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(op => op.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 

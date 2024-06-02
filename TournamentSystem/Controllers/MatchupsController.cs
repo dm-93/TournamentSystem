@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TournamentSystemDataSource.DTO.Pagination;
 using TournamentSystemDataSource.Services.Interfaces;
 
 namespace TournamentSystem.Controllers
@@ -16,7 +17,7 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateMatchups([FromBody] int tournamentId, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateMatchups([FromQuery] int tournamentId, CancellationToken cancellationToken)
         {
             var tournament = await _tournamentService.GetByIdAsync(tournamentId, cancellationToken);
             if (tournament == null) 
@@ -26,6 +27,13 @@ namespace TournamentSystem.Controllers
 
             await _roundsService.CreateRoundsAsync(tournament, cancellationToken);
             return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMatchups([FromQuery] Pagination<int> pagination, CancellationToken cancellationToken)
+        {
+            var res = await _roundsService.GetMatchupsAsync(pagination, cancellationToken);
+            return res is not null ? Ok(res) : BadRequest();
         }
     }
 }

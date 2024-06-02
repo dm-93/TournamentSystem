@@ -1,6 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using TournamentSystemDataSource.Contexts;
+﻿using TournamentSystemDataSource.DTO.Pagination;
 using TournamentSystemDataSource.Repositories.Interfaces;
 using TournamentSystemDataSource.Services.Interfaces;
 using TournamentSystemModels;
@@ -13,6 +11,11 @@ namespace TournamentSystemDataSource.Services
         public RoundsService(IRoundsRepository roundsRepository)
         {
             _roundsRepository = roundsRepository;
+        }
+
+        public async Task<PaginationResponse<IEnumerable<Matchup>>> GetMatchupsAsync(Pagination<int> pagination, CancellationToken cancellationToken)
+        {
+            return await _roundsRepository.GetTournamentRoundsAsync(pagination, cancellationToken);
         }
 
         public async Task CreateRoundsAsync(Tournament tournament, CancellationToken cancellationToken)
@@ -52,6 +55,7 @@ namespace TournamentSystemDataSource.Services
             }
         }
 
+        //TODO: Check this logic again
         private static List<Matchup> CreateFirstRound(int byes, List<Team> teams)
         {
             List<Matchup> output = [];
