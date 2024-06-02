@@ -122,6 +122,20 @@ namespace TournamentSystemDataSource.Services
             return new TournamentDto(res.Entity);
         }
 
+        public async Task CompleteTournamentAsync(int tournamentId, CancellationToken cancellationToken)
+        {
+            var tournament = await _context.Tournaments.FirstOrDefaultAsync(x => x.Id == tournamentId, cancellationToken);
+
+            if (tournament == null)
+            {
+                throw new ArgumentException($"Турнир с Id {tournament.Id} не найден.");
+            }
+
+            tournament.Completed = true;
+            _context.Update(tournament);
+            await _unitOfWork.SaveAsync(cancellationToken);
+        }
+
         public async Task<Tournament> UpdateTournamentAsync(TournamentDto updatedTournament, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(updatedTournament);
@@ -149,7 +163,14 @@ namespace TournamentSystemDataSource.Services
             }
 
             _context.Entry(existingTournament).CurrentValues.SetValues(updatedTournament);
-            await _unitOfWork.SaveAsync(cancellationToken);
+            try
+            {
+                await _unitOfWork.SaveAsync(cancellationToken);
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine(ex.Message);
+            }
             _logger.LogInformation($"Tournament with ID {updatedTournament.Id} updated successfully.");
             return existingTournament;
         }

@@ -7,6 +7,7 @@ public class TournamentDto
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public decimal EntryFee { get; set; }
+    public bool Completed { get; set; }
     public string TournamentPictureBase64 { get; set; }
 
     public TournamentDto()
@@ -21,6 +22,7 @@ public class TournamentDto
         StartDate = tournament.StartDate;
         EndDate = tournament.EndDate;
         EntryFee = tournament.EntryFee;
+        Completed = tournament.Completed;
         TournamentPictureBase64 = string.Empty;
     }
 

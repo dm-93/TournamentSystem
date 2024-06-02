@@ -52,6 +52,15 @@ namespace TournamentSystem.Controllers
             return res != null ? Ok(res) : BadRequest();
         }
 
+        [HttpPatch("{id}/complete")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CompleteTournament(int id, CancellationToken cancellationToken)
+        {
+            await _service.CompleteTournamentAsync(id, cancellationToken);
+            return Ok();
+        }
+
+
         [HttpDelete]
         [Authorize(Roles = "Admin")]
         public async Task Delete([FromQuery] int tournamentId, CancellationToken cancellationToken)

@@ -2,17 +2,96 @@
 using Microsoft.EntityFrameworkCore;
 using TournamentSystemDataSource.Contexts;
 using TournamentSystemDataSource.DTO.Pagination;
+using TournamentSystemDataSource.DTO.Rounds;
 using TournamentSystemDataSource.Repositories.Interfaces;
+using TournamentSystemDataSource.Services.Interfaces;
 using TournamentSystemModels;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TournamentSystemDataSource.Repositories
 {
     internal sealed class RoundsRepository : IRoundsRepository
     {
         private readonly GeneralContext _context;
-        public RoundsRepository(GeneralContext context)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public RoundsRepository(GeneralContext context, IUnitOfWork unitOfWork)
         {
             _context = context;
+            _unitOfWork = unitOfWork;
+        }
+
+        public async Task<Matchup?> GetById(int matchupId, CancellationToken cancellationToken)
+        {
+            return await _context.Matchups
+                .AsNoTracking()
+                .Include(x => x.Entries)
+                    .ThenInclude(e => e.TeamCompeting)
+                .Include(m => m.Winner)
+                .FirstOrDefaultAsync(m => m.Id == matchupId, cancellationToken);
+        }
+
+        private async Task UpdateMatchAsync(SqlConnection connection,
+                                            Matchup matchup,
+                                            SqlTransaction transaction)
+        {
+            var query = @"UPDATE Matchups
+                        SET WinnerId = @WinnerId, UpdatedOn = @UpdatedOn
+                        WHERE Id = @Id;"
+            ;
+
+            using (var command = new SqlCommand(query, connection, transaction))
+            {
+               
+                command.Parameters.AddWithValue("@WinnerId", (object)matchup.Winner?.Id ?? DBNull.Value);
+                command.Parameters.AddWithValue("@UpdatedOn", ValidateDateTime(matchup.UpdatedOn));
+                command.Parameters.AddWithValue("@Id", matchup.Id);
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        private async Task UpdateMatchEntryAsync(SqlConnection connection,
+                                            MatchupEntry entry,
+                                            SqlTransaction transaction)
+        {
+            var query = @"UPDATE MatchupEntries
+                        SET Score = @Score, TeamCompetingId = @TeamCompetingId
+                        WHERE Id = @Id;"
+            ;
+
+            using (var command = new SqlCommand(query, connection, transaction))
+            {
+                command.Parameters.AddWithValue("@Score", entry.Score);
+                command.Parameters.AddWithValue("@TeamCompetingId", (object)entry.TeamCompeting?.Id ?? DBNull.Value);
+                command.Parameters.AddWithValue("@Id", entry.Id);
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        public async Task UpdateMatchupAsync(Matchup matchup, CancellationToken cancellationToken)
+        {
+            using var connection = new SqlConnection(_context.Database.GetConnectionString());
+            await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                await UpdateMatchAsync(connection, matchup, transaction);
+
+                foreach (var entry in matchup.Entries)
+                {
+                    entry.ParentMatchup = matchup;
+                    await UpdateMatchEntryAsync(connection, entry, transaction);
+                }
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task SaveRoundsAsync(Tournament tournament)
@@ -46,14 +125,25 @@ namespace TournamentSystemDataSource.Repositories
             }
         }
 
-        public async Task<PaginationResponse<IEnumerable<Matchup>>> GetTournamentRoundsAsync(Pagination<int> pagination, CancellationToken cancellationToken)   
+        public async Task<List<Matchup>> GetTournamentRoundsAsync(int tournamentId, CancellationToken cancellationToken)
+        {
+            var data = await _context.Matchups
+                .Include(x => x.Entries)
+                    .ThenInclude(e => e.TeamCompeting)
+                .Include(m => m.Winner)
+                .Where(m => m.TournamentId == tournamentId)
+                .ToListAsync(cancellationToken);
+            return data ?? new List<Matchup>();
+        }
+
+        public async Task<PaginationResponse<IEnumerable<Matchup>>> GetTournamentRoundsAsync(Pagination<GetNextRoundDto> pagination, CancellationToken cancellationToken)
         {
             var totalCount = await _context.Matchups.CountAsync(cancellationToken);
             var data = await _context.Matchups
                 .Include(x => x.Entries)
                     .ThenInclude(e => e.TeamCompeting)
                 .Include(m => m.Winner)
-                .Where(m => m.TournamentId == pagination.Parameter)
+                .Where(m => m.TournamentId == pagination.Parameter.tournamentId && m.MatchupRound == pagination.Parameter.roundId)
                 .Skip((pagination.Page - 1) * pagination.ItemsPerPage)
                 .Take(pagination.ItemsPerPage)
                 .ToListAsync(cancellationToken);

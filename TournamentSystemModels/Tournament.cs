@@ -9,6 +9,7 @@ namespace TournamentSystemModels
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal EntryFee { get; set; }
+        public bool Completed { get; set; }
         public Pictures TournamentPicture { get; set; }
         public List<Team> EnteredTeams { get; set; } = [];
         public List<Prize> Prizes { get; set; } = [];
