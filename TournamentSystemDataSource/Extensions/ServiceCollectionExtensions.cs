@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TournamentSystemDataSource.Contexts;
+using TournamentSystemDataSource.Email.Interfaces;
+using TournamentSystemDataSource.Email.Services;
 using TournamentSystemDataSource.Repositories;
 using TournamentSystemDataSource.Repositories.Interfaces;
 using TournamentSystemDataSource.Services;
@@ -37,6 +39,7 @@ namespace TournamentSystemDataSource.Extensions
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IPicturesService, PicturesService>();
             services.AddScoped<IRoundsService, RoundsService>();
+            services.AddScoped<IEmailSender, EmailSender>();
         }
 
         public static void AddRepositories(this IServiceCollection services)

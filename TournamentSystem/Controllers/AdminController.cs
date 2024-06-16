@@ -3,22 +3,44 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TournamentSystemDataSource.DTO.Admin;
+using TournamentSystemDataSource.DTO.Person.Request;
+using TournamentSystemDataSource.Services.Interfaces;
 using TournamentSystemModels.Identity;
 
 namespace TournamentSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IPersonService _personService;
 
-        public AdminController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+        public AdminController(UserManager<User> userManager, 
+            RoleManager<IdentityRole> roleManager,
+            IPersonService personService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _personService = personService;
+        }
+
+        [HttpPost("addUser")]
+        public async Task<IActionResult> AddNewUser(AdminAddUserDto userDto, CancellationToken cancellationToken)
+        {
+            var user = new User { UserName = userDto.Name, Email = userDto.Email };
+            var res = await _userManager.CreateAsync(user, userDto.Password);
+
+            if (!res.Succeeded) 
+            { 
+                return BadRequest();
+            }
+
+            var personCreated = await _personService.CreateAsync(new CreatePersonRequest(userDto), cancellationToken);
+
+            return res.Succeeded && personCreated is not null ? Ok(userDto) : BadRequest();
         }
 
         [HttpGet]

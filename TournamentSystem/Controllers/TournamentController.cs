@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TournamentSystemDataSource.DTO;
 using TournamentSystemDataSource.Services.Interfaces;
-using TournamentSystemModels;
 
 namespace TournamentSystem.Controllers
 {
@@ -17,9 +17,22 @@ namespace TournamentSystem.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
+            var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+
+            if (string.IsNullOrEmpty(userRole) || string.IsNullOrEmpty(email))
+            {
+                return BadRequest();
+            }
+
+            if (userRole.Equals("user", StringComparison.OrdinalIgnoreCase))
+            {
+                _service.GetTournamentsByUserEmailAsync(email, cancellationToken);
+            }
+
             var res = await _service.GetTournamentsAsync(cancellationToken);
             return res is not null ? Ok(res) : NotFound();
         }

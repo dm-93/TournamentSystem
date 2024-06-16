@@ -6,8 +6,6 @@ using TournamentSystemDataSource.DTO.Rounds;
 using TournamentSystemDataSource.Repositories.Interfaces;
 using TournamentSystemDataSource.Services.Interfaces;
 using TournamentSystemModels;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TournamentSystemDataSource.Repositories
 {

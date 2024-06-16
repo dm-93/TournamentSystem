@@ -163,6 +163,7 @@ namespace TournamentSystemDataSource.Services
             }
 
             _context.Entry(existingTournament).CurrentValues.SetValues(updatedTournament);
+
             try
             {
                 await _unitOfWork.SaveAsync(cancellationToken);
@@ -190,6 +191,15 @@ namespace TournamentSystemDataSource.Services
             _context.Tournaments.Remove(tournament);
             await _unitOfWork.SaveAsync(cancellationToken);
             _logger.LogInformation($"Tournament with ID {tournamentId} deleted successfully.");
+        }
+
+        public async Task GetTournamentsByUserEmailAsync(string email, CancellationToken cancellationToken)
+        {
+            var res = await _context.Tournaments
+                .Include(x => x.EnteredTeams)
+                .ThenInclude(t => t.Select(m => m.TeamMembers.Where(m => m.Email.Equals(email))))
+                .AsSplitQuery()
+                .ToListAsync(cancellationToken);
         }
     }
 }

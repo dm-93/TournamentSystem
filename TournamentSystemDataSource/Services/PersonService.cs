@@ -70,6 +70,25 @@ namespace TournamentSystemDataSource.Services
                 }).ToListAsync(cancellationToken);
         }
 
+        public async Task<GetPersonResponse> GetByEmail(string email, CancellationToken cancellationToken)
+        {
+            var person = await _context.Persons.Include(p => p.Address)
+                                         .Include(p => p.UserPicture)
+                                         .FirstOrDefaultAsync(p => p.Email.Equals(email));
+            return new GetPersonResponse
+            {
+                Id = person.Id,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                Age = person.Age,
+                Weight = person.Weight,
+                Gender = person.Gender,
+                Phone = person.Phone,
+                Email = person.Email,
+                Address = person.Address,
+            };
+        }
+
         public async Task<CreatePersonResponse> CreateAsync(CreatePersonRequest createPersonRequest, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(createPersonRequest);
