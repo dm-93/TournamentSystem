@@ -10,9 +10,11 @@ namespace TournamentSystem.Controllers
     public class TeamsController : ControllerBase
     {
         private readonly ITeamService _service;
-        public TeamsController(ITeamService service)
+        private readonly ITeamStatisticsService _statistics;
+        public TeamsController(ITeamService service, ITeamStatisticsService teamStatistics)
         {
             _service = service;
+            _statistics = teamStatistics;
         }
 
         [HttpGet]
@@ -47,6 +49,13 @@ namespace TournamentSystem.Controllers
         public async Task Delete([FromQuery] int teamId, CancellationToken cancellationToken)
         {
             await _service.DeleteTeamAsync(teamId, cancellationToken);
+        }
+
+        [HttpGet("statistics")]
+        public async Task<IActionResult> Statistics([FromQuery] int teamId, CancellationToken cancellationToken)
+        {
+            var res = await _statistics.GetTeamStatisticAsync(teamId, cancellationToken);
+            return Ok(res);
         }
     }
 }

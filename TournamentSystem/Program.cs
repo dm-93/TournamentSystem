@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 using TournamentSystemDataSource.Contexts;
 using TournamentSystemDataSource.Email.Models;
@@ -31,13 +32,14 @@ namespace TournamentSystem
             #endregion
 
             builder.Services.AddGeneralContext();
+            builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection(nameof(EmailConfiguration)));
+            builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<EmailConfiguration>>().Value);
             builder.Services.AddRepositories();
             builder.Services.AddUnitOfWork();
             builder.Services.AddServices();
             builder.Services.AddControllers().AddJsonOptions(op => op.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection(nameof(EmailConfiguration)));
 
             var app = builder.Build();
 

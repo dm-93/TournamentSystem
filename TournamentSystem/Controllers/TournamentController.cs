@@ -11,9 +11,11 @@ namespace TournamentSystem.Controllers
     public class TournamentController : ControllerBase
     {
         private readonly ITournamentService _service;
-        public TournamentController(ITournamentService service)
+        private readonly ITournamentStatisticsService _tournamentStatisticsService;
+        public TournamentController(ITournamentService service, ITournamentStatisticsService tournamentStatisticsService)
         {
             _service = service;
+            _tournamentStatisticsService = tournamentStatisticsService;
         }
 
         [HttpGet]
@@ -79,6 +81,13 @@ namespace TournamentSystem.Controllers
         public async Task Delete([FromQuery] int tournamentId, CancellationToken cancellationToken)
         {
             await _service.DeleteTournamentAsync(tournamentId, cancellationToken);
+        }
+
+        [HttpGet("statistics")]
+        public async Task<IActionResult> Statistics([FromQuery] int tournamentId, CancellationToken cancellationToken)
+        {
+            var result = await _tournamentStatisticsService.GetTrounamentStatistics(tournamentId, cancellationToken);
+            return result is not null ? Ok(result) : BadRequest();
         }
     }
 }

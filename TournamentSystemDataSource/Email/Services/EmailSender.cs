@@ -31,11 +31,19 @@ namespace TournamentSystemDataSource.Email.Services
 
         private async Task SendAsync(MimeMessage message, CancellationToken cancellationToken)
         {
-            using var client = new SmtpClient();
-            await client.ConnectAsync(_emailConfig.SmtpServer, _emailConfig.Port, true, cancellationToken);
-            client.AuthenticationMechanisms.Remove("XOAUTH2");
-            await client.AuthenticateAsync(_emailConfig.UserName, _emailConfig.Password, cancellationToken);
-            await client.SendAsync(message, cancellationToken);
+            try
+            {
+                using var client = new SmtpClient();
+                await client.ConnectAsync(_emailConfig.SmtpServer, _emailConfig.Port, true, cancellationToken);
+                //client.AuthenticationMechanisms.Remove("XOAUTH2");
+                await client.AuthenticateAsync(_emailConfig.UserName, _emailConfig.Password, cancellationToken);
+                await client.SendAsync(message, cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
         }
     }
 }

@@ -31,6 +31,7 @@ namespace TournamentSystemDataSource.Extensions
 
         public static void AddServices(this IServiceCollection services)
         {
+            services.AddScoped<IEmailSender, EmailSender>();
             services.AddScoped<IPersonService, PersonService>();
             services.AddScoped<IPrizeService, PrizeService>();
             services.AddScoped<ITeamDescriptionService, TeamDescriptionService>();
@@ -39,7 +40,9 @@ namespace TournamentSystemDataSource.Extensions
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IPicturesService, PicturesService>();
             services.AddScoped<IRoundsService, RoundsService>();
-            services.AddScoped<IEmailSender, EmailSender>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<ITeamStatisticsService, TeamStatisticsService>();
+            services.AddScoped<ITournamentStatisticsService, TournamentStatisticsService>();
         }
 
         public static void AddRepositories(this IServiceCollection services)

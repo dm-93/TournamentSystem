@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TournamentSystemDataSource.DTO.Admin;
 using TournamentSystemDataSource.DTO.Person.Request;
+using TournamentSystemDataSource.Email.Interfaces;
 using TournamentSystemDataSource.Services.Interfaces;
 using TournamentSystemModels.Identity;
 
@@ -17,14 +18,17 @@ namespace TournamentSystem.Controllers
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IPersonService _personService;
+        private readonly IEmailService _emailService;
 
-        public AdminController(UserManager<User> userManager, 
+        public AdminController(UserManager<User> userManager,
             RoleManager<IdentityRole> roleManager,
-            IPersonService personService)
+            IPersonService personService,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _personService = personService;
+            _emailService = emailService;
         }
 
         [HttpPost("addUser")]
@@ -40,7 +44,12 @@ namespace TournamentSystem.Controllers
 
             var personCreated = await _personService.CreateAsync(new CreatePersonRequest(userDto), cancellationToken);
 
-            return res.Succeeded && personCreated is not null ? Ok(userDto) : BadRequest();
+            if (personCreated is not null)
+            {
+                await _emailService.SendEmailAsync(personCreated, cancellationToken);
+            }
+
+            return res.Succeeded && personCreated is not null ? Ok(res) : BadRequest();
         }
 
         [HttpGet]
